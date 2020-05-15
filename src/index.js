@@ -3,7 +3,6 @@ import { readFileSync } from 'fs';
 import { parse } from '@babel/parser';
 import { declare } from '@babel/helper-plugin-utils';
 import resolve from 'resolve';
-
 import optimize from './optimize';
 import escapeBraces from './escapeBraces';
 import transformSvg from './transformSvg';
@@ -26,13 +25,28 @@ export default declare(({
     SVG_CODE,
     SVG_DEFAULT_PROPS_CODE,
   }) => {
+    SVG_CODE.openingElement.attributes.push({
+      type: 'JSXAttribute',
+      name: {
+        type: 'JSXIdentifier',
+        name: 'ref',
+      },
+      value: {
+        type: 'JSXExpressionContainer',
+        expression: {
+          type: 'identifier',
+          name: 'ref',
+        },
+      },
+    });
+
     const namedTemplate = `
-      var SVG_NAME = function SVG_NAME(props) { return SVG_CODE; };
+      var SVG_NAME = React.forwardRef(function SVG_NAME(props, ref) { return SVG_CODE; });
       ${SVG_DEFAULT_PROPS_CODE ? 'SVG_NAME.defaultProps = SVG_DEFAULT_PROPS_CODE;' : ''}
       ${IS_EXPORT ? 'export { SVG_NAME };' : ''}
     `;
     const anonymousTemplate = `
-      var Component = function (props) { return SVG_CODE; };
+      var Component = React.forwardRef(function (props, ref) { return SVG_CODE; });
       ${SVG_DEFAULT_PROPS_CODE ? 'Component.defaultProps = SVG_DEFAULT_PROPS_CODE;' : ''}
       Component.displayName = 'EXPORT_FILENAME';
       export default Component;
