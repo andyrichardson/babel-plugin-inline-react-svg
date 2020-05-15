@@ -34,7 +34,7 @@ export default declare(({
       value: {
         type: 'JSXExpressionContainer',
         expression: {
-          type: 'identifier',
+          type: 'Identifier',
           name: 'ref',
         },
       },
